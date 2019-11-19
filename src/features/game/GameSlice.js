@@ -51,12 +51,16 @@ const GameSlice = createSlice({
     },
 
     checkGameCompleted(state, action) {
-      state.isGameCompleted = state.wordToGuess.every(letter => {
-        if (state.correctLetters.includes(letter)) {
-          return true;
-        }
-        return false;
-      });
+      if (state.attemptsLeft <= 0) {
+        state.isGameCompleted = true;
+      } else {
+        state.isGameCompleted = state.wordToGuess.every(letter => {
+          if (state.correctLetters.includes(letter)) {
+            return true;
+          }
+          return false;
+        });
+      }
     },
 
     saveGame(state, action) {

@@ -1,24 +1,32 @@
 import React from 'react';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import styled from 'styled-components';
 
 function Intro() {
+  const WrapPaper = styled(Paper)`
+    && {
+      padding: 2em;
+      li {
+        list-style: none;
+        margin: 10px;
+      }
+    }
+  `;
+
   return (
-    <Paper>
-      <Typography variant="h5" component="h3">
-        Welcome
-      </Typography>
+    <WrapPaper>
       <Typography component="p">
-        Just guess the word by typing a letter
+        Guess the word by typing a letter
         <ul>
-          <li> if you guess the word with 5 attempts left, you get 100</li>
-          <li>For every missed attempt rest 20 points. </li>
+          <li> If you guess the word with 5 attempts left, you get 100</li>
+          <li>For every missed attempt it will rest 20 points. </li>
         </ul>
       </Typography>
-      <Typography component="h2" variant="h2">
+      <Typography component="h5" variant="h5">
         Are you ready?
       </Typography>
-    </Paper>
+    </WrapPaper>
   );
 }
 

@@ -11,7 +11,7 @@ function PlaceholderWord({ letters, correctLetters }) {
       list-style: none;
       margin: 10px;
       font-size: 2em;
-      border-bottom: 1px solid #000;
+      border-bottom: 5px solid #000;
       min-width: 50px;
       height: 50px;
     }

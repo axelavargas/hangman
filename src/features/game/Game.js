@@ -1,8 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect, useDispatch, useSelector } from 'react-redux';
 
 import styled from 'styled-components';
 import Grid from '@material-ui/core/Grid';
+import Button from '@material-ui/core/Button';
+import Attempts from './Attempts';
 
 import Header from '../../components/Header';
 import Intro from '../../components/Intro';
@@ -32,14 +34,27 @@ const GridCustom = styled(Grid)`
   margin-top: 3em;
 `;
 
+const StartButton = styled(Button)`
+  && {
+    padding: 16px 44px;
+    background-color: #af52bf;
+    font-size: 1.4rem;
+    &:hover {
+      background-color: #9c27b0;
+    }
+  }
+`;
+
 function Game() {
   const dispatch = useDispatch();
+  const [isGameStarted, setGameStarted] = useState(false);
 
   const {
     wordToGuess,
     isLoading,
     attemptsLeft,
     correctLetters,
+    failedLetters,
     isGameCompleted,
     score,
   } = useSelector(state => state.activeGame);
@@ -53,15 +68,18 @@ function Game() {
   };
 
   const updateFailedLetters = letter => {
-    dispatch(saveFailedLetter({ letter }));
-    dispatch(reduceAttempts());
+    if (!failedLetters.includes(letter)) {
+      dispatch(saveFailedLetter({ letter }));
+      dispatch(reduceAttempts());
+    }
+    //Todo: dispatch message this letter is already type
   };
 
   // once initialized get a random word
   useEffect(() => {
     // fetch random word
     dispatch(fetchWordToGuess());
-  }, [dispatch]);
+  }, [dispatch, isGameStarted]);
 
   useEffect(() => {
     if (isGameCompleted) {
@@ -78,24 +96,48 @@ function Game() {
           <Header />
           <Intro />
           <GridCustom container direction="column" alignItems="center">
-            <Grid item>attempts {attemptsLeft}</Grid>
-            <Grid item>Score {score}</Grid>
-
-            <Grid item>
-              <PlaceholderWord
-                letters={wordToGuess}
-                correctLetters={correctLetters}
-              />
-            </Grid>
-            <Grid item>
-              <InputUser
-                wordToGuess={wordToGuess}
-                updateFailedLetters={updateFailedLetters}
-                updateCorrectLetters={updateCorrectLetters}
-                checkGameCompleted={verifyIfGameCompleted}
-              />
-            </Grid>
-          </GridCustom>{' '}
+            {!isGameStarted ? (
+              <StartButton
+                variant="contained"
+                color="primary"
+                size="large"
+                onClick={() => setGameStarted(() => true)}
+              >
+                Let's Play
+              </StartButton>
+            ) : (
+              <>
+                <Grid item>
+                  <Attempts attemptsLeft={attemptsLeft} />
+                </Grid>
+                <Grid item>
+                  <PlaceholderWord
+                    letters={wordToGuess}
+                    correctLetters={correctLetters}
+                  />
+                </Grid>
+                <Grid item>
+                  <InputUser
+                    wordToGuess={wordToGuess}
+                    updateFailedLetters={updateFailedLetters}
+                    updateCorrectLetters={updateCorrectLetters}
+                    checkGameCompleted={verifyIfGameCompleted}
+                    isGameCompleted={isGameCompleted}
+                  />
+                </Grid>
+              </>
+            )}
+            {isGameCompleted ? (
+              <>
+                <Grid item>Score {score}</Grid>
+                {score ? (
+                  <div>YOU WON</div>
+                ) : (
+                  <div>YOU LOSE THE WORD WAS {wordToGuess.concat()}</div>
+                )}
+              </>
+            ) : null}
+          </GridCustom>
         </>
       )}
     </>

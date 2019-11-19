@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Input from '@material-ui/core/Input';
 
@@ -7,12 +7,16 @@ function InputUser({
   updateFailedLetters,
   updateCorrectLetters,
   checkGameCompleted,
+  isGameCompleted,
 }) {
+  const [letter, updateLetter] = useState('');
+
   // check if input is correct
-  function checkAttempt(e) {
+  function checkAttempt(e, updateLetter) {
     // state of words
     const currentLetter = e.target.value;
 
+    updateLetter(() => currentLetter);
     if (!currentLetter) return;
 
     if (wordToGuess.includes(currentLetter)) {
@@ -20,18 +24,27 @@ function InputUser({
     } else {
       updateFailedLetters(currentLetter);
     }
-
     checkGameCompleted();
   }
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      updateLetter(() => '');
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [letter]);
+
   return (
     <Input
       placeholder="type letter"
+      value={letter}
       inputProps={{
         'aria-label': 'type letter',
         maxLength: 1,
+        readOnly: isGameCompleted,
       }}
       onChange={e => {
-        checkAttempt(e);
+        checkAttempt(e, updateLetter);
       }}
     />
   );
@@ -46,6 +59,7 @@ InputUser.propTypes = {
   updateFailedLetters: PropTypes.func.isRequired,
   updateCorrectLetters: PropTypes.func.isRequired,
   checkGameCompleted: PropTypes.func.isRequired,
+  isGameCompleted: PropTypes.bool.isRequired,
 };
 
 export default InputUser;
