@@ -1,53 +1,48 @@
 import React, { useEffect, useState } from 'react';
 import { connect, useDispatch, useSelector } from 'react-redux';
 
-import styled from 'styled-components';
 import Grid from '@material-ui/core/Grid';
-import Button from '@material-ui/core/Button';
-import Attempts from './Attempts';
 
 import Header from '../../components/Header';
 import Intro from '../../components/Intro';
 
+import GridCustom from '../../components/game/GridCustom';
+import StartButton from '../../components/game/StartButton';
+import ReStartButton from '../../components/game/ReStartButton';
+
 import PlaceholderWord from './PlaceholderWord';
 import InputUser from './InputUser';
+import HighestScore from './HighestScore';
+import ScoreGame from './ScoreGame';
+import Attempts from './Attempts';
 
 import {
-  fetchWordToGuess,
+  startActiveGame,
   saveCorrectLetter,
   saveFailedLetter,
   reduceAttempts,
   checkGameCompleted,
-  saveGame,
-} from './GameSlice';
+  resetActiveGame,
+} from './ActiveGameSlice';
+
+import { fetchWordToGuess, saveGame } from './GameSlice';
 
 const mapDispatch = {
+  startActiveGame,
   fetchWordToGuess,
   saveCorrectLetter,
   saveFailedLetter,
   reduceAttempts,
   checkGameCompleted,
+  resetActiveGame,
   saveGame,
 };
-
-const GridCustom = styled(Grid)`
-  margin-top: 3em;
-`;
-
-const StartButton = styled(Button)`
-  && {
-    padding: 16px 44px;
-    background-color: #af52bf;
-    font-size: 1.4rem;
-    &:hover {
-      background-color: #9c27b0;
-    }
-  }
-`;
 
 function Game() {
   const dispatch = useDispatch();
   const [isGameStarted, setGameStarted] = useState(false);
+  const [isStartingNewGame, setStartingNewGame] = useState(false);
+  const [isReStartingNewGame, setReStartingNewGame] = useState(false);
 
   const {
     wordToGuess,
@@ -58,6 +53,12 @@ function Game() {
     isGameCompleted,
     score,
   } = useSelector(state => state.activeGame);
+
+  const { currentGameId, gamesById, gamesAllIds } = useSelector(
+    state => state.games,
+  );
+
+  const activeGameState = useSelector(state => state.activeGame);
 
   const updateCorrectLetters = letter => {
     dispatch(saveCorrectLetter({ letter }));
@@ -75,33 +76,67 @@ function Game() {
     //Todo: dispatch message this letter is already type
   };
 
+  const startNewGame = () => {
+    setGameStarted(() => !isGameStarted);
+    setStartingNewGame(() => !isStartingNewGame);
+  };
+
+  const restartNewGame = () => {
+    setReStartingNewGame(() => !isReStartingNewGame);
+  };
+
   // once initialized get a random word
   useEffect(() => {
     // fetch random word
-    dispatch(fetchWordToGuess());
-  }, [dispatch, isGameStarted]);
+    if (isStartingNewGame || isReStartingNewGame) {
+      dispatch(resetActiveGame());
+      dispatch(fetchWordToGuess());
+    }
+    if (currentGameId && gamesById[currentGameId]) {
+      dispatch(startActiveGame(gamesById[currentGameId]));
+    }
+    return function cleanup() {
+      setStartingNewGame(() => false);
+      setReStartingNewGame(() => false);
+    };
+  }, [
+    dispatch,
+    currentGameId,
+    isReStartingNewGame,
+    isStartingNewGame,
+    gamesById,
+    setStartingNewGame,
+  ]);
 
   useEffect(() => {
     if (isGameCompleted) {
-      dispatch(saveGame());
+      dispatch(saveGame(activeGameState));
     }
-  }, [isGameCompleted, dispatch]);
+  }, [isGameCompleted, activeGameState, dispatch]);
 
   return (
     <>
       {isLoading ? (
-        <h3>is Loading</h3>
+        <h3>grab some coffee, we are Loading...</h3>
       ) : (
         <>
           <Header />
           <Intro />
+          <GridCustom
+            container
+            direction="column"
+            justify="flex-end"
+            alignItems="center"
+          >
+            <HighestScore gamesAllIds={gamesAllIds} gamesById={gamesById} />
+          </GridCustom>
           <GridCustom container direction="column" alignItems="center">
-            {!isGameStarted ? (
+            {!isGameStarted && !isGameCompleted ? (
               <StartButton
                 variant="contained"
                 color="primary"
                 size="large"
-                onClick={() => setGameStarted(() => true)}
+                onClick={() => startNewGame()}
               >
                 Let's Play
               </StartButton>
@@ -116,25 +151,34 @@ function Game() {
                     correctLetters={correctLetters}
                   />
                 </Grid>
+                {!isGameCompleted ? (
+                  <Grid item xs={12}>
+                    <InputUser
+                      wordToGuess={wordToGuess}
+                      updateFailedLetters={updateFailedLetters}
+                      updateCorrectLetters={updateCorrectLetters}
+                      checkGameCompleted={verifyIfGameCompleted}
+                      isGameCompleted={isGameCompleted}
+                    />
+                  </Grid>
+                ) : null}
                 <Grid item xs={12}>
-                  <InputUser
-                    wordToGuess={wordToGuess}
-                    updateFailedLetters={updateFailedLetters}
-                    updateCorrectLetters={updateCorrectLetters}
-                    checkGameCompleted={verifyIfGameCompleted}
-                    isGameCompleted={isGameCompleted}
-                  />
+                  <ReStartButton
+                    variant="contained"
+                    color="secondary"
+                    size="medium"
+                    onClick={() => restartNewGame()}
+                  >
+                    {isGameCompleted
+                      ? 'Start Over'
+                      : 'Too hard? Try another word?'}
+                  </ReStartButton>
                 </Grid>
               </>
             )}
             {isGameCompleted ? (
               <>
-                <Grid item>Score {score}</Grid>
-                {score ? (
-                  <div>YOU WON</div>
-                ) : (
-                  <div>YOU LOSE THE WORD WAS {wordToGuess.concat()}</div>
-                )}
+                <ScoreGame wordToGuess={wordToGuess} score={score} />
               </>
             ) : null}
           </GridCustom>

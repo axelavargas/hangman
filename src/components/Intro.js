@@ -16,7 +16,7 @@ function Intro() {
 
   return (
     <WrapPaper>
-      <Typography component="p">
+      <div>
         Guess the word by typing a letter
         <ul>
           <li>
@@ -24,7 +24,7 @@ function Intro() {
           </li>
           <li>For every missed attempt it will rest 20 points. </li>
         </ul>
-      </Typography>
+      </div>
       <Typography component="h5" variant="h5">
         Are you ready?
       </Typography>

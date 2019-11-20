@@ -9,10 +9,22 @@ const words = ['3dhubs', 'marvin', 'print', 'filament', 'order', 'layer'];
 function getRandomInt(max) {
   return Math.floor(Math.random() * Math.floor(max));
 }
+
+function getWord(words) {
+  return words[getRandomInt(words.length)];
+}
 // Mock any GET request to /users
 // arguments for reply are (status, data, headers)
-mock.onGet('/getRandomWord').reply(200, {
-  word: words[getRandomInt(words.length)],
+mock.onGet('/getRandomWord').reply(function(config) {
+  // `config` is the axios config and contains things like the url
+
+  // return an array in the form of [status, data, headers]
+  return [
+    200,
+    {
+      word: getWord(words),
+    },
+  ];
 });
 
 export async function getRandomWord() {

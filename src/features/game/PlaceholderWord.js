@@ -20,11 +20,11 @@ function PlaceholderWord({ letters, correctLetters }) {
 
   return (
     <WrapperPlaceholder>
-      {letters.map(letter => {
+      {letters.map((letter, index) => {
         if (correctLetters.includes(letter)) {
-          return <li>{letter}</li>;
+          return <li key={index}> {letter} </li>;
         }
-        return <li />;
+        return <li key={index} />;
       })}
     </WrapperPlaceholder>
   );

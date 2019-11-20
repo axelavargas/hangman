@@ -42,6 +42,7 @@ function InputUser({
         'aria-label': 'type letter',
         maxLength: 1,
         readOnly: isGameCompleted,
+        autoFocus: true,
       }}
       onChange={e => {
         checkAttempt(e, updateLetter);

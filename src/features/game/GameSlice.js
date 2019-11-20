@@ -1,25 +1,15 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { getRandomWord } from '../../api/hangmanApi';
-
-const initialAttempts = 5;
+const uuidv4 = require('uuid/v4');
 
 const initialState = {
-  wordToGuess: [],
-  attemptsLeft: initialAttempts,
-  isLoading: false,
-  isGameCompleted: false,
-  correctLetters: [],
-  failedLetters: [],
-  error: null,
-  score: 0,
+  gamesAllIds: [],
+  gamesById: {},
+  currentGameId: null,
 };
 
 function startLoading(state) {
   state.isLoading = true;
-}
-
-function calcScore(state) {
-  return state.attemptsLeft > 0 ? state.attemptsLeft * 20 : 0;
 }
 
 function loadingFailed(state, action) {
@@ -28,72 +18,49 @@ function loadingFailed(state, action) {
 }
 
 const GameSlice = createSlice({
-  name: 'activeGame',
+  name: 'games',
   initialState,
   reducers: {
-    getWordToGuessStart: startLoading,
-    getWordToGuessSuccess(state, action) {
-      if (action.payload.word) {
-        state.wordToGuess = action.payload.word.split('');
-      }
-      state.isLoading = false;
-      state.error = null;
-    },
-    saveCorrectLetter(state, action) {
-      state.correctLetters.push(action.payload.letter);
-    },
-    saveFailedLetter(state, action) {
-      state.failedLetters.push(action.payload.letter);
-    },
+    startGameStart: startLoading,
+    startGameSuccess: {
+      reducer(state, action) {
+        const newActiveGame = {
+          wordToGuess: action.payload.data.word.split(''),
+          id: action.payload.id,
+        };
+        state.gamesAllIds.push(action.payload.id);
+        state.gamesById[action.payload.id] = newActiveGame;
+        state.currentGameId = action.payload.id;
+        state.isLoading = false;
+        state.error = null;
+      },
 
-    reduceAttempts(state) {
-      state.attemptsLeft = state.attemptsLeft - 1;
+      prepare(data) {
+        return { payload: { data, id: uuidv4() } };
+      },
     },
-
-    checkGameCompleted(state, action) {
-      if (state.attemptsLeft <= 0) {
-        state.isGameCompleted = true;
-      } else {
-        state.isGameCompleted = state.wordToGuess.every(letter => {
-          if (state.correctLetters.includes(letter)) {
-            return true;
-          }
-          return false;
-        });
-      }
-    },
-
+    startGameFailure: loadingFailed,
     saveGame(state, action) {
-      if (state.isGameCompleted) {
-        //calc score
-        state.score = calcScore(state);
-      }
+      const ActiveGame = action.payload;
+      state.gamesById[ActiveGame.id] = ActiveGame;
     },
-    restartGame() {},
-    getWordFailure: loadingFailed,
   },
 });
 
 export const {
-  getWordToGuessStart,
-  getWordToGuessSuccess,
-  getWordToGuessFailed,
-  saveCorrectLetter,
-  saveFailedLetter,
-  reduceAttempts,
+  startGameStart,
+  startGameSuccess,
+  startGameFailure,
   saveGame,
-  restartGame,
-  getWordFailure,
-  checkGameCompleted,
 } = GameSlice.actions;
 
 export const fetchWordToGuess = () => async dispatch => {
   try {
-    dispatch(getWordToGuessStart());
+    dispatch(startGameStart());
     const wordToGuess = await getRandomWord();
-    dispatch(getWordToGuessSuccess(wordToGuess));
+    dispatch(startGameSuccess(wordToGuess));
   } catch (err) {
-    dispatch(getWordFailure(err.toString()));
+    dispatch(startGameFailure(err.toString()));
   }
 };
 
