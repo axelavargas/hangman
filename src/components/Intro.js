@@ -19,7 +19,9 @@ function Intro() {
       <Typography component="p">
         Guess the word by typing a letter
         <ul>
-          <li> If you guess the word with 5 attempts left, you get 100</li>
+          <li>
+            If you guess the word with 5 attempts left, you get 100 points.
+          </li>
           <li>For every missed attempt it will rest 20 points. </li>
         </ul>
       </Typography>

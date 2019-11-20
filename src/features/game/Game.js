@@ -107,16 +107,16 @@ function Game() {
               </StartButton>
             ) : (
               <>
-                <Grid item>
+                <Grid item xs={12}>
                   <Attempts attemptsLeft={attemptsLeft} />
                 </Grid>
-                <Grid item>
+                <Grid item xs={12}>
                   <PlaceholderWord
                     letters={wordToGuess}
                     correctLetters={correctLetters}
                   />
                 </Grid>
-                <Grid item>
+                <Grid item xs={12}>
                   <InputUser
                     wordToGuess={wordToGuess}
                     updateFailedLetters={updateFailedLetters}

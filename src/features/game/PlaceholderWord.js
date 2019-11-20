@@ -6,6 +6,7 @@ function PlaceholderWord({ letters, correctLetters }) {
   const WrapperPlaceholder = styled.ul`
     padding: 4em;
     display: flex;
+    flex-wrap: wrap;
     li {
       flex-direction: row;
       list-style: none;
@@ -18,16 +19,14 @@ function PlaceholderWord({ letters, correctLetters }) {
   `;
 
   return (
-    <>
-      <WrapperPlaceholder>
-        {letters.map(letter => {
-          if (correctLetters.includes(letter)) {
-            return <li>{letter}</li>;
-          }
-          return <li />;
-        })}
-      </WrapperPlaceholder>
-    </>
+    <WrapperPlaceholder>
+      {letters.map(letter => {
+        if (correctLetters.includes(letter)) {
+          return <li>{letter}</li>;
+        }
+        return <li />;
+      })}
+    </WrapperPlaceholder>
   );
 }
 
