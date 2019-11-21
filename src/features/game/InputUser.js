@@ -14,10 +14,12 @@ function InputUser({
   // check if input is correct
   function checkAttempt(e, updateLetter) {
     // state of words
-    const currentLetter = e.target.value;
+    let currentLetter = e.target.value;
 
     updateLetter(() => currentLetter);
     if (!currentLetter) return;
+
+    currentLetter = currentLetter.toLowerCase();
 
     if (wordToGuess.includes(currentLetter)) {
       updateCorrectLetters(currentLetter);
